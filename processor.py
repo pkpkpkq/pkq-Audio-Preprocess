@@ -45,6 +45,9 @@ class DatasetProcessor:
         if self.ser_enabled:
             self.ser_recognizer = SpeechEmotionRecognizer(self.ser_config)
 
+        output_config = self.config.get('output', {})
+        self.jsonl_output_enabled = output_config.get('jsonl_output', False)
+
         self.folder_name = os.path.basename(self.root_dir.rstrip(os.sep))
         if not self.folder_name:
             raise ValueError(f"无法从根目录派生文件夹名称: {self.root_dir}")
@@ -676,6 +679,22 @@ class DatasetProcessor:
                     ol.write(f"{ent['wav_abs']}|{self.folder_name}|ZH|{ent['lab_text']}\n")
             self.logger.info(f"已生成列表文件: {list_path}")
             print(f"Generated list file: {list_path}")
+
+            # 如果启用了 JSONL 输出，则生成对应的 .jsonl 文件
+            if self.jsonl_output_enabled:
+                import json
+                jsonl_path = os.path.splitext(list_path)[0] + ".jsonl"
+                with open(jsonl_path, "w", encoding="utf-8") as f_jsonl:
+                    for ent in entries:
+                        json_record = {
+                            "id": os.path.basename(ent['wav_abs']),
+                            "audio": ent['wav_abs'],
+                            "text": ent['lab_text'],
+                            "speaker": self.folder_name
+                        }
+                        f_jsonl.write(json.dumps(json_record, ensure_ascii=False) + '\n')
+                self.logger.info(f"已生成 JSONL 文件: {jsonl_path}")
+                print(f"Generated JSONL file: {jsonl_path}")
 
         overall_summary = f"最终音频总时长: {au.format_hms(total_duration_seconds)}"
         print(overall_summary)

@@ -89,3 +89,7 @@ text:
     # 例如，如果 lab 包含 "BGM-{NICKNAME}"，此音频文件将被完全跳过。
     "{NICKNAME}": "{SKIP}"
     "奥兹：": "{SKIP}"
+
+# --- 输出配置 ---
+output:
+  jsonl_output: true # 设置为 true 以便为每个 .list 文件生成一个对应的 .jsonl 格式的标注文件
